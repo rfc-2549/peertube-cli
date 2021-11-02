@@ -8,8 +8,7 @@ use LWP::UserAgent;
 use JSON;
 use Term::ReadLine;
 use Term::ANSIColor;
-use strict;
-use warnings;
+use Getopt::Long;
 
 # Objects
 
@@ -18,9 +17,9 @@ my $ua = new LWP::UserAgent;
 my $term = new Term::ReadLine("ptcli");
 
 # Configuration
-# TODO: config file or something
+my $conf_path = $ENV{PTCLIRC} || "$ENV{HOME}/.ptclirc";
 
-our $INSTANCE = "https://vid.qorg11.net";
+do $conf_path;
 
 # Prototypes
 
@@ -29,10 +28,17 @@ sub select_video($);
 sub get_video_data($);
 sub play_video($);
 
+# Process arguments
+
+GetOptions(
+		 "instance=s"   => \$config{instance},
+		 "resolution=i" => \$config{default_resolution},
+		 "player=s"     => \$config{player}
+		);
 # Main program
 
 if (!$ARGV[0]) {
-	print <STDERR>, "No argument given\n";
+	print "No argument given\n";
 	my $input = $term->readline("=> ");
 	my $response = search_video($input);
 	my $json_obj = $json->decode($response);
@@ -52,7 +58,7 @@ if (!$ARGV[0]) {
 
 sub search_video($) {
 	my $search_string = shift;
-	my $response = $ua->get("$INSTANCE/api/v1/search/videos?search=$search_string");
+	my $response = $ua->get("$config{instance}/api/v1/search/videos?search=$search_string");
 	if ($response->{_rc} == 200) {
 		return $response->content;
 	} else {
@@ -77,14 +83,15 @@ sub select_video($) {
 
 sub get_video_data($) {
 	my $uuid = shift;
-	my $response = $ua->get("$INSTANCE/api/v1/videos/$uuid");
+	my $response = $ua->get("$config{instance}/api/v1/videos/$uuid");
 
 	if($response->{_rc} == 200) {
 		my $json_obj = $json->decode($response->content);
-		return ($json_obj->{files}->[0]->{fileUrl},
+		return ($json_obj->{files}->[$config{default_resolution}]->{fileUrl},
 			   $json_obj->{name},
 			   $json_obj->{description},
-			   $json_obj->{account}->{name});
+			   $json_obj->{account}->{name},
+			   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{id});
 	} else {
 		return "error\n";
 	}
@@ -96,8 +103,11 @@ sub play_video($) {
 	my $title = $ref->[1];
 	my $description = $ref->[2];
 	my $author = $ref->[3];
+	my $resolution = $ref->[4];
 	print "Video title: $title\n";
 	print "Description: $description\n\n";
 	print "Video author: $author\n";
-	`mpv $url`;
+	print "Resolution: $resolution\n";
+	
+	`$config{player} $url`;
 }

@@ -1,0 +1,18 @@
+# peertube-cli configuration
+
+# This is just a perl hash.
+
+our %config;
+
+# Default video player
+
+$config{player} = "mpv";
+
+# Default instance to use.
+
+$config{instance} = "https://vid.qorg11.net";
+
+# Default resolution, 0 should be the highest resolution.
+
+$config{default_resolution} = 0;
+
