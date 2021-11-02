@@ -133,11 +133,7 @@ sub get_video_data($) {
 
 sub play_video($) {
 	my $ref = $_[0];
-	my $url = $ref->[0];
-	my $title = $ref->[1];
-	my $description = $ref->[2];
-	my $author = $ref->[3];
-	my $resolution = $ref->[4];
+	my ($url, $title, $description, $author, $resolution) = @$ref;
 	print "Video title: $title\n";
 	print "Description: $description\n\n";
 	print "Video author: $author\n";
