@@ -16,8 +16,9 @@ interactive search.
 ## TODO
 
 * Config file [X]
-* let user select video player (though config file)
+* let user select video player (through config file) [X]
 * getopt for instance, and maybe video player :^) [X]
+* Directly pass an URL to play the video (Get UUID from url and call `get_video_data()`
 
 ## Options
 
