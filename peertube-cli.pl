@@ -9,12 +9,14 @@ use JSON;
 use Term::ReadLine;
 use Term::ANSIColor;
 use Getopt::Long;
+use Time::Seconds;
 
 # Objects
 
 my $json = new JSON;
 my $ua = new LWP::UserAgent;
 my $term = new Term::ReadLine("ptcli");
+my $time = new Time::Seconds;
 
 # Configuration
 my $conf_path = $ENV{PTCLIRC} || "$ENV{HOME}/.ptclirc";
@@ -87,16 +89,29 @@ sub select_video($) {
 
 	my $total = $json_obj->{total};
 	$total = 25 if $total > 25;
+	print colored['bold'], "Connected to $config{instance}\n";
+	print "Select the video you want to play (:h for help)\n";
 	for (my $i = 0; $i < $total; $i++) {
 		$videos_data[$i] = $json_obj->{data}->[$i];
-		print "$i: " . $videos_data[$i]->{name} . "\n";
-		
+		printf("%5i: %-104s %-1s\n",
+			  $i,
+			  colored(['bold'], $videos_data[$i]->{name}),
+			  "--- " . colored(['green'], $videos_data[$i]->{account}->{name}),
+			 );
 	}
 	my $input = $term->readline("=> ");
 	if ($input eq "n" || $input eq "N") {
 		$counter += 25;
 		return -1;
 	}
+	elsif ($input eq "p" || $input eq "P") {
+		$counter -= 25;
+		return -1;
+	} elsif($input eq ":h") {
+		&help_prompt();
+		return -1;
+	}
+
 	return $videos_data[$input]->{uuid};
 }
 
@@ -129,4 +144,12 @@ sub play_video($) {
 	print "Resolution: $resolution\n";
 	
 	`$config{player} $url`;
+}
+
+sub help_prompt() {
+	print "n: next page\n";
+	print "p: previous page\n";
+	print ":h show this\n";
+	print "Press enter to continue\n";
+	<STDIN>;
 }
