@@ -10,11 +10,16 @@ use Term::ReadLine;
 use Term::ANSIColor;
 use Getopt::Long;
 use Time::Seconds;
+use warnings;
+use strict;
+
+our %config;
 
 # Objects
 
 my $json = new JSON;
 my $ua = new LWP::UserAgent;
+$ua->agent("curl");
 my $term = new Term::ReadLine("ptcli");
 my $time = new Time::Seconds;
 
@@ -62,6 +67,9 @@ if (!$ARGV[0]) {
 	my @selected_video_data;
 	while($uuid == -1) {
 		$response = search_video(join("",@ARGV), $counter);
+		if($response == -1) {
+			print colored['bold red'], "ERROR\n";
+		}
 		my $json_obj = $json->decode($response);
 		$uuid = &select_video($json_obj);
 		@selected_video_data = get_video_data($uuid);
@@ -78,8 +86,7 @@ sub search_video($$) {
 	if ($response->{_rc} == 200) {
 		return $response->content;
 	} else {
-		print color('red');
-		return sprintf("ERROR: server returned status code $response->{_rc}\n");
+		return $response->{_rc};
 	}
 }
 

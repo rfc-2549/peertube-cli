@@ -2,8 +2,6 @@
 
 # This is just a perl hash.
 
-our %config;
-
 # Default video player
 
 $config{player} = "mpv";
