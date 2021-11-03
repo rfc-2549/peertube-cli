@@ -14,6 +14,7 @@ use warnings;
 use strict;
 
 our %config;
+my $input;
 
 # Objects
 
@@ -30,7 +31,7 @@ do $conf_path or die "Could not load configuration: $!";
 
 # Prototypes
 
-sub search_video($$);
+sub search_video($$$);
 sub select_video($);
 sub get_video_data($);
 sub play_video($);
@@ -47,13 +48,16 @@ GetOptions(
 
 if (!$ARGV[0]) {
 	print "No argument given\n";
-	my $input = $term->readline("=> ");
+	$input = $term->readline("=> ");
 
 	my $response;
 	my $uuid = -1;
 	my @selected_video_data;
-	while($uuid == -1) {
-		$response = search_video($input, $counter);
+	while ($uuid == -1) {
+		$response = search_video($config{instance}, $input, $counter);
+		if ($response eq "-1") {
+			print colored['bold red'], "ERROR\n";
+		}
 		my $json_obj = $json->decode($response);
 		$uuid = &select_video($json_obj);
 		@selected_video_data = get_video_data($uuid);
@@ -65,10 +69,12 @@ if (!$ARGV[0]) {
 	my $response;
 	my $uuid = -1;
 	my @selected_video_data;
-	while($uuid == -1) {
-		$response = search_video(join("",@ARGV), $counter);
-		if($response eq "-1") {
+	$input = join("",@ARGV);
+	while ($uuid == -1) {
+		$response = search_video($config{instance}, $input, $counter);
+		if ($response eq "-1") {
 			print colored['bold red'], "ERROR\n";
+			die $!;
 		}
 		my $json_obj = $json->decode($response);
 		$uuid = &select_video($json_obj);
@@ -80,12 +86,14 @@ if (!$ARGV[0]) {
 
 # Functions
 
-sub search_video($$) {
-	my ($search_string, $counter) = @_;
-	my $response = $ua->get("$config{instance}/api/v1/search/videos?search=$search_string&count=25&start=$counter");
+sub search_video($$$) {
+	my ($instance, $search_string, $counter) = @_;
+	print $instance . "\n";
+	my $response = $ua->get("$instance/api/v1/search/videos?search=$search_string&count=25&start=$counter");
 	if ($response->{_rc} == 200) {
 		return $response->content;
 	} else {
+		print $response->content;
 		return -1;
 	}
 }
@@ -105,20 +113,26 @@ sub select_video($) {
 			  "--- " . colored(['green'], $videos_data[$i]->{account}->{name}),
 			 );
 	}
-	my $input = $term->readline("=> ");
-	if ($input eq "n" || $input eq "N") {
+	my $prompt_input = $term->readline("=> ");
+	if ($prompt_input eq "n" || $prompt_input eq "N") {
 		$counter += 25;
 		return -1;
-	}
-	elsif ($input eq "p" || $input eq "P") {
+	} elsif ($prompt_input eq "p" || $prompt_input eq "P") {
 		$counter -= 25;
 		return -1;
-	} elsif($input eq ":h") {
+	} elsif ($prompt_input eq ":h") {
 		&help_prompt();
 		return -1;
-	}
+	} elsif($prompt_input =~ /^:s/) {
+		$prompt_input =~ s/^:s //;
+		return -1;
+	} elsif($prompt_input =~ /^:i/) {
+		$config{instance} = $prompt_input;
+		$config{instance} =~ s/^:i //;
+		return -1;
+}
 
-	return $videos_data[$input]->{uuid};
+	return "$videos_data[$input]->{uuid}";
 }
 
 sub get_video_data($) {
@@ -152,6 +166,8 @@ sub help_prompt() {
 	print "n: next page\n";
 	print "p: previous page\n";
 	print ":h show this\n";
+	print ":s <query> search for something else\n";
+	print ":i <instance> change instance\n";
 	print "Press enter to continue\n";
 	<STDIN>;
 }
