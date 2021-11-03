@@ -67,7 +67,7 @@ if (!$ARGV[0]) {
 	my @selected_video_data;
 	while($uuid == -1) {
 		$response = search_video(join("",@ARGV), $counter);
-		if($response == -1) {
+		if($response eq "-1") {
 			print colored['bold red'], "ERROR\n";
 		}
 		my $json_obj = $json->decode($response);
@@ -86,14 +86,13 @@ sub search_video($$) {
 	if ($response->{_rc} == 200) {
 		return $response->content;
 	} else {
-		return $response->{_rc};
+		return -1;
 	}
 }
 
 sub select_video($) {
 	my $json_obj = shift;
 	my @videos_data;
-
 	my $total = $json_obj->{total};
 	$total = 25 if $total > 25;
 	print colored['bold'], "Connected to $config{instance}\n";
