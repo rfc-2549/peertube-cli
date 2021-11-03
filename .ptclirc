@@ -16,3 +16,6 @@ $config{instance} = "https://vid.qorg11.net";
 
 $config{default_resolution} = 0;
 
+# This tells perl everything's alright
+
+1;
