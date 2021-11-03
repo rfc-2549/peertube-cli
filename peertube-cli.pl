@@ -21,7 +21,7 @@ my $time = new Time::Seconds;
 # Configuration
 my $conf_path = $ENV{PTCLIRC} || "$ENV{HOME}/.ptclirc";
 
-do $conf_path;
+do $conf_path or die "Could not load configuration: $!";
 
 # Prototypes
 
