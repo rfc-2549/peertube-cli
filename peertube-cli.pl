@@ -53,6 +53,15 @@ if (!$ARGV[0]) {
 	my $response;
 	my $uuid = -1;
 	my @selected_video_data;
+
+	if ($input =~ /^http(s):\/\/.*/) {
+		my $uuid = $input;
+		$uuid =~ s/\/.w\///;
+		$uuid =~ s/\/videos\/watch//;
+		my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
+		$config{instance} = $tmp_instance;
+		@selected_video_data = get_video_data($uuid);
+	}
 	while ($uuid == -1) {
 		$response = search_video($config{instance}, $input, $counter);
 		if ($response eq "-1") {
@@ -65,11 +74,18 @@ if (!$ARGV[0]) {
 	play_video(\@selected_video_data);
 
 } else {
-	
 	my $response;
 	my $uuid = -1;
 	my @selected_video_data;
 	$input = join("",@ARGV);
+	if ($input =~ /^http(s):\/\/.*/) {
+		my $uuid = $input;
+		$uuid =~ s/\/.w\///;
+		$uuid =~ s/\/videos\/watch//;
+		my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
+		$config{instance} = $tmp_instance;
+		@selected_video_data = get_video_data($uuid);
+	}
 	while ($uuid == -1) {
 		$response = search_video($config{instance}, $input, $counter);
 		if ($response eq "-1") {
@@ -123,15 +139,14 @@ sub select_video($) {
 	} elsif ($prompt_input eq ":h") {
 		&help_prompt();
 		return -1;
-	} elsif($prompt_input =~ /^:s/) {
+	} elsif ($prompt_input =~ /^:s/) {
 		$prompt_input =~ s/^:s //;
 		return -1;
-	} elsif($prompt_input =~ /^:i/) {
+	} elsif ($prompt_input =~ /^:i/) {
 		$config{instance} = $prompt_input;
 		$config{instance} =~ s/^:i //;
 		return -1;
-}
-
+	}
 	return "$videos_data[$input]->{uuid}";
 }
 
