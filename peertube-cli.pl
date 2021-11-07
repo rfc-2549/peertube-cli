@@ -10,7 +10,6 @@ use Term::ReadLine;
 use Term::ANSIColor;
 use Getopt::Long;
 use Time::Seconds;
-use warnings;
 use strict;
 
 our %config;
@@ -104,7 +103,6 @@ if (!$ARGV[0]) {
 
 sub search_video($$$) {
 	my ($instance, $search_string, $counter) = @_;
-	print $instance . "\n";
 	my $response = $ua->get("$instance/api/v1/search/videos?search=$search_string&count=25&start=$counter");
 	if ($response->{_rc} == 200) {
 		return $response->content;
