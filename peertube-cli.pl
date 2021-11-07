@@ -59,7 +59,6 @@ if (!$ARGV[0]) {
 		$uuid =~ s/\/videos\/watch//;
 		my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
 		$config{instance} = $tmp_instance;
-		@selected_video_data = get_video_data($uuid);
 	}
 	while ($uuid == -1) {
 		$response = search_video($config{instance}, $input, $counter);
@@ -83,7 +82,6 @@ if (!$ARGV[0]) {
 		$uuid =~ s/\/videos\/watch//;
 		my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
 		$config{instance} = $tmp_instance;
-		@selected_video_data = get_video_data($uuid);
 	}
 	while ($uuid == -1) {
 		$response = search_video($config{instance}, $input, $counter);
@@ -95,6 +93,7 @@ if (!$ARGV[0]) {
 		$uuid = &select_video($json_obj);
 		@selected_video_data = get_video_data($uuid);
 	}
+
 	play_video(\@selected_video_data);
 
 }
@@ -145,7 +144,7 @@ sub select_video($) {
 		$config{instance} =~ s/^:i //;
 		return -1;
 	}
-	return "$videos_data[$input]->{uuid}";
+	return $videos_data[$prompt_input]->{uuid};
 }
 
 sub get_video_data($) {
