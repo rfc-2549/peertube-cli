@@ -44,59 +44,60 @@ GetOptions(
 		 "player=s"     => \$config{player}
 		);
 # Main program
-
-if (!$ARGV[0]) {
-	my $response;
-	my $uuid = -1;
-	my @selected_video_data;
-	$input = "";
-	while ($uuid == -1) {
-		$response = search_video($config{instance}, $input, $counter);
-		if ($response eq "-1") {
-			print colored['bold red'], "ERROR\n";
+while (1) {
+	if (!$ARGV[0]) {
+		my $response;
+		my $uuid = -1;
+		my @selected_video_data;
+		$input = "";
+		while ($uuid == -1) {
+			$response = search_video($config{instance}, $input, $counter);
+			if ($response eq "-1") {
+				print colored['bold red'], "ERROR\n";
+			}
+			my $json_obj = $json->decode($response);
+			$uuid = &select_video($json_obj);
+			@selected_video_data = get_video_data($uuid);
 		}
-		my $json_obj = $json->decode($response);
-		$uuid = &select_video($json_obj);
-		@selected_video_data = get_video_data($uuid);
-	}
-	play_video(\@selected_video_data);
+		play_video(\@selected_video_data);
 
-} else {
-	my $response;
-	my $uuid = -1;
-	my @selected_video_data;
-	$input = join("",@ARGV);
-	if ($input =~ /^http(s):\/\/.*/) {
-		my $uuid = $input;
-		$uuid =~ s/\/.w\///;
-		$uuid =~ s/\/videos\/watch//;
-		my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
-		$config{instance} = $tmp_instance;
-	}
-	while ($uuid == -1) {
-		$response = search_video($config{instance}, $input, $counter);
-		if ($response eq "-1") {
-			print colored['bold red'], "ERROR\n";
-			die $!;
+	} else {
+		my $response;
+		my $uuid = -1;
+		my @selected_video_data;
+		$input = join("",@ARGV);
+		if ($input =~ /^http(s):\/\/.*/) {
+			my $uuid = $input;
+			$uuid =~ s/\/.w\///;
+			$uuid =~ s/\/videos\/watch//;
+			my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
+			$config{instance} = $tmp_instance;
 		}
-		my $json_obj = $json->decode($response);
-		$uuid = &select_video($json_obj);
-		@selected_video_data = get_video_data($uuid);
-	}
+		while ($uuid == -1) {
+			$response = search_video($config{instance}, $input, $counter);
+			if ($response eq "-1") {
+				print colored['bold red'], "ERROR\n";
+				die $!;
+			}
+			my $json_obj = $json->decode($response);
+			$uuid = &select_video($json_obj);
+			@selected_video_data = get_video_data($uuid);
+		}
 
-	play_video(\@selected_video_data);
+		play_video(\@selected_video_data);
+
+	}
 
 }
-
 # Functions
 
 sub search_video($$$) {
 	my ($instance, $search_string, $counter) = @_;
-	if($counter < 0) {
+	if ($counter < 0) {
 		$counter = 0;
 	}
 	my $response;
-	if($search_string eq "") {
+	if ($search_string eq "") {
 		$response = $ua->get("$instance/api/v1/search/videos?count=25&start=$counter");
 	} else {
 		$response = $ua->get("$instance/api/v1/search/videos?search=$search_string&count=25&start=$counter");
@@ -152,11 +153,20 @@ sub get_video_data($) {
 
 	if ($response->{_rc} == 200) {
 		my $json_obj = $json->decode($response->content);
-		return ($json_obj->{files}->[$config{default_resolution}]->{fileUrl},
-			   $json_obj->{name},
-			   $json_obj->{description},
-			   $json_obj->{account}->{name},
-			   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{label});
+		if ($json_obj->{files}->[$config{default_resolution}]->{fileUrl}) {
+			return ($json_obj->{files}->[$config{default_resolution}]->{fileUrl},
+				   $json_obj->{name},
+				   $json_obj->{description},
+				   $json_obj->{account}->{name},
+				   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{label});
+		} else { # For some reason, vlc seems to work better with this kind of videos.
+			return ($json_obj->{streamingPlaylists}->[0]->{files}->[0]->{fileUrl},
+				   $json_obj->{name},
+				   $json_obj->{description},
+				   $json_obj->{account}->{name},
+				   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{label});
+		
+		}
 	} else {
 		return "error\n";
 	}
@@ -165,6 +175,7 @@ sub get_video_data($) {
 sub play_video($) {
 	my $ref = $_[0];
 	my ($url, $title, $description, $author, $resolution) = @$ref;
+	print $url . "\n\n";
 	print "Video title: $title\n";
 	print "Description: $description\n\n";
 	print "Video author: $author\n";
