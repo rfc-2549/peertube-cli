@@ -47,19 +47,10 @@ GetOptions(
 
 if (!$ARGV[0]) {
 	print "No argument given\n";
-	$input = $term->readline("=> ");
-
 	my $response;
 	my $uuid = -1;
 	my @selected_video_data;
-
-	if ($input =~ /^http(s):\/\/.*/) {
-		my $uuid = $input;
-		$uuid =~ s/\/.w\///;
-		$uuid =~ s/\/videos\/watch//;
-		my ($tmp_instance) = $input =~ m!(https?://[^:/]+)!;
-		$config{instance} = $tmp_instance;
-	}
+	$input = "";
 	while ($uuid == -1) {
 		$response = search_video($config{instance}, $input, $counter);
 		if ($response eq "-1") {
@@ -105,7 +96,12 @@ sub search_video($$$) {
 	if($counter < 0) {
 		$counter = 0;
 	}
-	my $response = $ua->get("$instance/api/v1/search/videos?search=$search_string&count=25&start=$counter");
+	my $response;
+	if($search_string eq "") {
+		$response = $ua->get("$instance/api/v1/search/videos?count=25&start=$counter");
+	} else {
+		$response = $ua->get("$instance/api/v1/search/videos?search=$search_string&count=25&start=$counter");
+	}
 	if ($response->{_rc} == 200) {
 		return $response->content;
 	} else {
@@ -187,3 +183,4 @@ sub help_prompt() {
 	print "Press enter to continue\n";
 	<STDIN>;
 }
+
