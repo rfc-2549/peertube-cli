@@ -102,6 +102,9 @@ if (!$ARGV[0]) {
 
 sub search_video($$$) {
 	my ($instance, $search_string, $counter) = @_;
+	if($counter < 0) {
+		$counter = 0;
+	}
 	my $response = $ua->get("$instance/api/v1/search/videos?search=$search_string&count=25&start=$counter");
 	if ($response->{_rc} == 200) {
 		return $response->content;
@@ -138,6 +141,7 @@ sub select_video($) {
 		return -1;
 	} elsif ($prompt_input =~ /^:s/) {
 		$prompt_input =~ s/^:s //;
+		$input = $prompt_input;
 		return -1;
 	} elsif ($prompt_input =~ /^:i/) {
 		$config{instance} = $prompt_input;
@@ -157,7 +161,7 @@ sub get_video_data($) {
 			   $json_obj->{name},
 			   $json_obj->{description},
 			   $json_obj->{account}->{name},
-			   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{id});
+			   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{label});
 	} else {
 		return "error\n";
 	}
