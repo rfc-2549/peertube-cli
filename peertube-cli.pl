@@ -46,7 +46,6 @@ GetOptions(
 # Main program
 
 if (!$ARGV[0]) {
-	print "No argument given\n";
 	my $response;
 	my $uuid = -1;
 	my @selected_video_data;
