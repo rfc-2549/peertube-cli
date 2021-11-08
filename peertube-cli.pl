@@ -160,12 +160,11 @@ sub get_video_data($) {
 				   $json_obj->{account}->{name},
 				   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{label});
 		} else { # For some reason, vlc seems to work better with this kind of videos.
-			return ($json_obj->{streamingPlaylists}->[0]->{files}->[0]->{fileUrl},
+			return ($json_obj->{streamingPlaylists}->[0]->{files}->[0]->{fileDownloadUrl},
 				   $json_obj->{name},
 				   $json_obj->{description},
 				   $json_obj->{account}->{name},
-				   $json_obj->{files}->[$config{default_resolution}]->{resolution}->{label});
-		
+				   $json_obj->{streamingPlaylists}->[0]->{files}->[$config{resolution}]->{resolution}->{label})
 		}
 	} else {
 		return "error\n";
