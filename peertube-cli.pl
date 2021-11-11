@@ -10,6 +10,7 @@ use Term::ReadLine;
 use Term::ANSIColor;
 use Getopt::Long;
 use Time::Seconds;
+use Scalar::Util qw(looks_like_number); 
 use strict;
 
 our %config;
@@ -143,8 +144,14 @@ sub select_video($) {
 		$config{instance} = $prompt_input;
 		$config{instance} =~ s/^:i //;
 		return -1;
+	} elsif(looks_like_number $prompt_input) {
+		return $videos_data[$prompt_input]->{uuid};
+	} else {
+		print colored['bold'], "Don't know what you meant.\n";
+		&help_prompt();
+		return -1;
 	}
-	return $videos_data[$prompt_input]->{uuid};
+	
 }
 
 sub get_video_data($) {
