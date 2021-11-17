@@ -21,3 +21,16 @@ The file
 is written in perl using perl's hashes. And it contains 3
 values, instance, resolution and player. peertube-cli will use the
 values set in this file if nothing is passed with getopt arguments.
+.SH CONSIDERATIONS
+
+using peertube-cli might be harmful for PeerTube instances, as you're
+downloading the video
+.B from the server
+rather from peers, so you'd be consuming more server bandwith thus
+making it slowler.
+.SH LICENSE
+
+peertube-cli is under the GPLv3 or any later.
+.SH BUGS
+
+Of course.
