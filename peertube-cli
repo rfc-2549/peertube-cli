@@ -53,9 +53,10 @@ our $counter = 0;
 # Process arguments
 
 GetOptions(
-		 "instance=s"   => \$config{instance},
-		 "resolution=i" => \$config{default_resolution},
-		 "player=s"     => \$config{player}
+		 "instance=s"     => \$config{instance},
+		 "resolution=i"   => \$config{default_resolution},
+		 "player=s"       => \$config{player},
+		 "player-flags=s" => \$config{player_flags}
 		);
 # Main program
 while (1) {
@@ -200,7 +201,7 @@ sub play_video($) {
 	print "Video author: $author\n";
 	print "Resolution: $resolution\n";
 	
-	`$config{player} $url`;
+	`$config{player} $config{player_flags} $url`;
 }
 
 sub help_prompt() {
