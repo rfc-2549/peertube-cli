@@ -53,10 +53,10 @@ our $counter = 0;
 # Process arguments
 
 GetOptions(
-		 "instance=s"     => \$config{instance},
-		 "resolution=i"   => \$config{default_resolution},
-		 "player=s"       => \$config{player},
-		 "player-flags=s" => \$config{player_flags}
+		 "instance|i=s"     => \$config{instance},
+		 "resolution|r=i"   => \$config{default_resolution},
+		 "player|p=s"       => \$config{player},
+		 "player-flags|f=s" => \$config{player_flags}
 		);
 # Main program
 while (1) {
