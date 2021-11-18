@@ -23,7 +23,9 @@ use Term::ReadLine;
 use Term::ANSIColor;
 use Getopt::Long;
 use Time::Seconds;
-use Scalar::Util qw(looks_like_number); 
+use Scalar::Util qw(looks_like_number);
+use Pod::Usage;
+
 use strict;
 
 our %config;
@@ -56,7 +58,9 @@ GetOptions(
 		 "instance|i=s"     => \$config{instance},
 		 "resolution|r=i"   => \$config{default_resolution},
 		 "player|p=s"       => \$config{player},
-		 "player-flags|f=s" => \$config{player_flags}
+		 "player-flags|f=s" => \$config{player_flags},
+		 "help|h"           => sub {pod2usage(1); exit;},
+		 "man|m"            => sub {pod2usage(-exitval => 0, -verbose=> 2); exit;},
 		);
 # Main program
 while (1) {
@@ -213,4 +217,37 @@ sub help_prompt() {
 	print "Press enter to continue\n";
 	<STDIN>;
 }
+__END__
 
+=head1 peertube-cli
+
+peertube-cli - PeerTube Viewer
+
+=head1 SYNOPSIS
+
+peertube-cli [--instance] [--player] [--resolution] [search query]
+
+=head1 DESCRIPTION
+
+This program is a peertube client which allows you to browse any
+instance using PeerTube's API.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-instance>:
+peertube instance to use, because of bugs, it must not end with a "/"
+
+=item B<-resolution>:
+by default 0 which is the highest resolution available.
+
+=item B<-player>:
+which media player to use, by default is mpv.
+
+=item B<-player-flags>:
+flags to append to the video player (-vo=x11 for example)
+
+=back
+
+=cut
