@@ -31,13 +31,16 @@ use strict;
 our %config;
 my $input;
 
+my @completions = qw(n h :h :s :help :instance help instance);
+
 # Objects
 
 my $json = new JSON;
 my $ua = new LWP::UserAgent;
 $ua->agent("curl");
 my $term = new Term::ReadLine("ptcli");
-my $time = new Time::Seconds;
+$term->Attribs->{'completion_function'} = sub  { return qw(:s :h n p :i); };
+
 
 # Configuration
 my $conf_path = $ENV{PTCLIRC} || "$ENV{HOME}/.ptclirc";
@@ -145,6 +148,8 @@ sub select_video($) {
 			 );
 	}
 	my $prompt_input = $term->readline("=> ");
+	
+	
 	if ($prompt_input eq "n" || $prompt_input eq "N") {
 		$counter += 25;
 		return -1;
@@ -155,12 +160,25 @@ sub select_video($) {
 		&help_prompt();
 		return -1;
 	} elsif ($prompt_input =~ /^:s/) {
-		$prompt_input =~ s/^:s //;
-		$input = $prompt_input;
+		$prompt_input =~ s/^:s//;
+		my $new_input = $prompt_input;
+		if ($new_input eq "") {
+			print "Empty input\n";
+			next;
+		} else {
+			$input = $prompt_input;
+		}
 		return -1;
 	} elsif ($prompt_input =~ /^:i/) {
-		$config{instance} = $prompt_input;
-		$config{instance} =~ s/^:i //;
+		my $new_instance = $prompt_input;
+		$new_instance =~ s/^:i//;
+		print $new_instance;
+		if ($new_instance eq "") {
+			print "Empty input\n";
+			next;
+		} else {
+			$config{instance} = $new_instance;
+		}
 		return -1;
 	} elsif (looks_like_number $prompt_input) {
 		return $videos_data[$prompt_input]->{uuid};
@@ -217,6 +235,12 @@ sub help_prompt() {
 	print "Press enter to continue\n";
 	<STDIN>;
 }
+
+sub rl_completion() {
+	my ($text, $line, $start) = @_;
+
+}
+
 __END__
 
 =head1 peertube-cli
@@ -247,7 +271,6 @@ which media player to use, by default is mpv.
 
 =item B<-player-flags>:
 flags to append to the video player (-vo=x11 for example)
-
 =back
 
 =cut
